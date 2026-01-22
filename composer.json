@@ -1,0 +1,21 @@
+{
+    "name": "tic-tac-toe-tournament/telegram-webapp",
+    "description": "Production Telegram WebApp Tic-Tac-Toe Tournament with real-money payments",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.0",
+        "ext-pdo": "*",
+        "ext-json": "*",
+        "ext-curl": "*",
+        "ext-fileinfo": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "TicTacToe\\": "src/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}
